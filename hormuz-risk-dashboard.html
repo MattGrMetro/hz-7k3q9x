@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Hormuz Maritime Risk Index</title>
+<!--
+  HORMUZ MARITIME RISK INDEX, FULL DASHBOARD
+  Self-contained: no external scripts, fonts or libraries.
+  Host in the same folder as readings.json. The page reads readings.json on load; if that cannot
+  be loaded (for example when opened straight from disk) it uses the copy in the data block below.
+  Fields per day: date, tin, tout (inbound and outbound transits), struck (vessels struck in the
+  24 h window), claims (vessels Iran claims it hit, unconfirmed), mil and dip (levels 0 to 4).
+-->
+<style>
+  :root { --bg:#fff; --panel:#fff; --fg:#1a1a19; --muted:#5d5c58; --line:#e1e0d9; --grid:#e8e7e0; --accent:#2a78d6; --ok:#0c8a0c; --bad:#c0392b; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#141413; --panel:#1d1d1b; --fg:#f0efec; --muted:#b5b4aa; --line:#383835; --grid:#2e2e2b; --accent:#4a93ec; --ok:#3fbf3f; --bad:#ef6b5b; }
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+  .page { max-width:1100px; margin:0 auto; padding:20px 16px 32px; display:grid; gap:16px; }
+  .brand { display:flex; align-items:center; }
+  .logo-chip { background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 14px; height:64px; display:inline-flex; align-items:center; }
+  .logo-chip img { height:44px; width:auto; display:block; }
+  h1 { font-family:Georgia,"Times New Roman",serif; font-weight:400; font-size:30px; margin:6px 0 4px; }
+  h2 { font-size:16px; font-weight:600; margin:0 0 4px; }
+  h3 { font-size:14px; font-weight:600; margin:0; }
+  p { margin:0; }
+  .kicker,.muted,.cap { color:var(--muted); font-size:12px; }
+  .lede { font-size:15px; line-height:1.5; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  .hero { display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; }
+  .big { font-family:Georgia,"Times New Roman",serif; font-size:64px; line-height:1; font-variant-numeric:tabular-nums; }
+  .of { font-size:12px; color:var(--muted); margin-left:6px; font-family:system-ui,sans-serif; }
+  .hero-side { display:grid; gap:8px; justify-items:start; }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; }
+  .tile { display:grid; gap:6px; align-content:start; }
+  .score { font-family:Georgia,"Times New Roman",serif; font-size:36px; line-height:1.1; font-variant-numeric:tabular-nums; }
+  .chip { display:inline-flex; gap:8px; align-items:center; padding:3px 10px; border-radius:999px; border:1px solid var(--line); font-weight:600; font-size:12px; letter-spacing:.04em; text-transform:uppercase; }
+  .pips { display:inline-flex; gap:3px; }
+  .pips i { width:8px; height:8px; border-radius:2px; border:1px solid var(--line); display:block; }
+  .up { color:var(--bad); } .down { color:var(--ok); } .flat { color:var(--muted); }
+  .spark { width:100%; height:34px; display:block; }
+  .chart { position:relative; min-height:240px; }
+  .chart svg { display:block; width:100%; height:auto; }
+  .chart text { font-size:11px; fill:var(--muted); font-family:inherit; }
+  .tip { position:absolute; pointer-events:none; background:var(--panel); border:1px solid var(--line); box-shadow:0 2px 10px rgba(0,0,0,.2); padding:6px 10px; border-radius:8px; font-size:12px; white-space:nowrap; z-index:2; color:var(--muted); }
+  .tip strong { display:block; color:var(--fg); }
+  .err { color:var(--bad); }
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <div class="brand"><div class="logo-chip"><img alt="Metrostar" src="data:image/png;base64,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"></div></div>
+  <p class="kicker" style="margin-top:12px">Maritime risk index, Strait of Hormuz</p>
+  <h1>Hormuz Maritime Risk Index</h1>
+  <p class="lede" id="lede"></p>
+</header>
+
+<section class="card hero" aria-label="Current index">
+  <div>
+    <h2>Index now</h2>
+    <div class="big"><span id="hri">...</span><span class="of">/ 100</span></div>
+  </div>
+  <div class="hero-side">
+    <div class="chip" id="chip"></div>
+    <p><span id="delta"></span> <span class="muted">vs previous edition</span></p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Hormuz Maritime Risk Index Trend</h2>
+  <p class="cap">Shaded zones are the five risk bands. Hover or tap the chart for the day's reading.</p>
+  <div class="chart" id="trend"></div>
+</section>
+
+<section class="tiles" id="tiles" aria-label="Component scores"></section>
+<p class="err" id="err"></p>
+</div>
+
+<!-- FALLBACK DATA, used only if readings.json cannot be loaded -->
+<script type="application/json" id="hri-data">
+{
+  "readings": [
+    {"date": "2026-11-09", "tin": 3, "tout": 2, "struck": 3, "claims": 1, "mil": 2, "dip": 2},
+    {"date": "2026-11-10", "tin": 2, "tout": 7, "struck": 0, "claims": 0, "mil": 1, "dip": 2},
+    {"date": "2026-11-11", "tin": 3, "tout": 4, "struck": 1, "claims": 2, "mil": 1, "dip": 3},
+    {"date": "2026-11-12", "tin": 5, "tout": 4, "struck": 1, "claims": 2, "mil": 1, "dip": 3},
+    {"date": "2026-11-13", "tin": 6, "tout": 4, "struck": 0, "claims": 1, "mil": 3, "dip": 2},
+    {"date": "2026-11-16", "tin": 5, "tout": 7, "struck": 2, "claims": 3, "mil": 2, "dip": 3},
+    {"date": "2026-11-19", "tin": 2, "tout": 5, "struck": 2, "claims": 3, "mil": 3, "dip": 3}
+  ]
+}
+</script>
+
+<script>
+var DATA_URL = "readings.json";
+var CFG = {
+  ceiling: 20,
+  weights: {attacks: 30, flow: 25, mil: 20, dip: 15, claims: 10},
+  bands: [{name: "Low", from: 0}, {name: "Moderate", from: 25}, {name: "Substantial", from: 45}, {name: "High", from: 65}, {name: "Extreme", from: 85}],
+  struckScore: [0, 50, 80, 100],
+  claimStep: 30,
+  levels: [0, 25, 50, 75, 100],
+  milLabels: ["Calm", "Threats or force posture changes only", "Claimed or unconfirmed strikes by one side", "Strikes claimed by both sides", "Sustained confirmed hostilities"],
+  dipLabels: ["Deal within reach", "Talks active, momentum claimed", "Mediation but no progress", "Talks denied or proposals rejected", "Collapse or walk-out"]
+};
+var KEYS = ["attacks", "flow", "mil", "dip", "claims"];
+var NAMES = {attacks: "Attacks on merchant ships", flow: "Transit flow", mil: "US and Iran military activity", dip: "Diplomacy", claims: "Unverified Iranian claims"};
+var BAND_COLOR = ["#1fb86a", "#f5b800", "#f27a24", "#e8383d", "#c4122f"];
+var BAND_FILL = [0.26, 0.30, 0.32, 0.34, 0.42];
+var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+var NS = "http://www.w3.org/2000/svg";
+
+function r1(v) { return Math.round(v * 10) / 10; }
+function pd(s) { var p = s.split("-"); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+function fmt(s) { var p = s.split("-"); return +p[2] + " " + MON[+p[1] - 1]; }
+function fmtY(s) { return fmt(s) + " " + s.slice(0, 4); }
+function bandOf(v) { var b = 0; CFG.bands.forEach(function (x, i) { if (v >= x.from) b = i; }); return b; }
+function lvl(v) { return Math.min(4, Math.max(0, Number(v) || 0)); }
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+function mk(name, attrs, text) { var n = document.createElementNS(NS, name); for (var a in attrs) n.setAttribute(a, attrs[a]); if (text !== undefined) n.textContent = text; return n; }
+function sgn(v) { return v === 0 ? "no change" : (v > 0 ? "▲ +" : "▼ -") + (Math.abs(v) % 1 ? Math.abs(v).toFixed(1) : Math.abs(v)); }
+function dcls(v) { return v === 0 ? "flat" : v > 0 ? "up" : "down"; }
+
+function compute(readings) {
+  var rows = readings.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }).map(function (r) {
+    var tin = Number(r.tin) || 0, tout = Number(r.tout) || 0, t = tin + tout;
+    var struck = Number(r.struck) || 0, claims = Number(r.claims) || 0, mil = lvl(r.mil), dip = lvl(r.dip);
+    var s = {
+      attacks: CFG.struckScore[Math.min(3, struck)],
+      flow: Math.max(0, Math.round(100 * (1 - t / CFG.ceiling))),
+      mil: CFG.levels[mil], dip: CFG.levels[dip],
+      claims: Math.min(100, CFG.claimStep * claims)
+    };
+    var total = 0;
+    KEYS.forEach(function (k) { total += s[k] * CFG.weights[k] / 100; });
+    return {date: r.date, tin: tin, tout: tout, transits: t, struck: struck, claims: claims, mil: mil, dip: dip, s: s, hri: r1(total), band: bandOf(total)};
+  });
+  rows.forEach(function (r, i) {
+    var p = rows[i - 1];
+    r.prev = p ? p.date : null;
+    r.delta = p ? r1(r.hri - p.hri) : null;
+    r.d = {};
+    KEYS.forEach(function (k) { r.d[k] = p ? r.s[k] - p.s[k] : null; });
+  });
+  return rows;
+}
+
+function chipFill(host, i) {
+  host.replaceChildren();
+  var pips = el("span", "pips");
+  for (var k = 0; k < 5; k++) { var p = el("i"); p.style.background = k <= i ? BAND_COLOR[i] : "transparent"; p.style.borderColor = k <= i ? BAND_COLOR[i] : ""; pips.appendChild(p); }
+  host.appendChild(pips);
+  host.appendChild(el("span", "", CFG.bands[i].name));
+}
+
+function spark(rows, key) {
+  var W = 160, H = 34;
+  var svg = mk("svg", {viewBox: "0 0 " + W + " " + H, "class": "spark", role: "img", "aria-label": NAMES[key] + " score by edition", preserveAspectRatio: "none"});
+  var t0 = pd(rows[0].date), t1 = pd(rows[rows.length - 1].date), pad = 12 * 3600 * 1000;
+  function x(d) { return 8 + (pd(d) - (t0 - pad)) / ((t1 + pad) - (t0 - pad)) * (W - 16); }
+  function y(v) { return H - 6 - v / 100 * (H - 12); }
+  svg.appendChild(mk("polyline", {points: rows.map(function (r) { return x(r.date) + "," + y(r.s[key]); }).join(" "), fill: "none", stroke: "var(--accent)", "stroke-width": 2, "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke"}));
+  var l = rows[rows.length - 1];
+  svg.appendChild(mk("circle", {cx: x(l.date), cy: y(l.s[key]), r: 3.5, fill: "var(--accent)"}));
+  return svg;
+}
+
+function drawTrend(rows) {
+  var host = document.getElementById("trend");
+  host.replaceChildren();
+  var W = Math.max(280, host.clientWidth || 700), H = 290;
+  var m = {t: 14, r: 84, b: 30, l: 34};
+  var t0 = pd(rows[0].date), t1 = pd(rows[rows.length - 1].date), pad = 12 * 3600 * 1000;
+  var lo = t0 - pad, hi = t1 + pad;
+  function x(d) { return m.l + (pd(d) - lo) / (hi - lo) * (W - m.l - m.r); }
+  function y(v) { return H - m.b - v / 100 * (H - m.t - m.b); }
+  var last = rows[rows.length - 1];
+  var svg = mk("svg", {viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "Hormuz Maritime Risk Index by edition, latest " + last.hri + " out of 100, band " + CFG.bands[last.band].name});
+  CFG.bands.forEach(function (b, i) {
+    var top = i + 1 < CFG.bands.length ? CFG.bands[i + 1].from : 100;
+    svg.appendChild(mk("rect", {x: m.l, y: y(top), width: W - m.l - m.r, height: y(b.from) - y(top), fill: BAND_COLOR[i], "fill-opacity": BAND_FILL[i]}));
+    svg.appendChild(mk("text", {x: W - m.r + 8, y: (y(top) + y(b.from)) / 2 + 4}, b.name));
+  });
+  [0, 25, 45, 65, 85, 100].forEach(function (tv) {
+    svg.appendChild(mk("line", {x1: m.l, x2: W - m.r, y1: y(tv), y2: y(tv), stroke: "var(--grid)", "stroke-width": 1}));
+    svg.appendChild(mk("text", {x: m.l - 6, y: y(tv) + 4, "text-anchor": "end"}, String(tv)));
+  });
+  var every = Math.max(1, Math.ceil(rows.length * 56 / (W - m.l - m.r)));
+  rows.forEach(function (r, i) { if (i % every === 0 || i === rows.length - 1) svg.appendChild(mk("text", {x: x(r.date), y: H - m.b + 16, "text-anchor": "middle"}, fmt(r.date))); });
+  svg.appendChild(mk("polyline", {points: rows.map(function (r) { return x(r.date) + "," + y(r.hri); }).join(" "), fill: "none", stroke: "var(--accent)", "stroke-width": 3, "stroke-linejoin": "round"}));
+  rows.forEach(function (r) { svg.appendChild(mk("circle", {cx: x(r.date), cy: y(r.hri), r: 4.5, fill: "var(--accent)", stroke: "var(--panel)", "stroke-width": 2})); });
+  var lx = x(last.date);
+  svg.appendChild(mk("text", {x: lx, y: y(last.hri) - 10, "text-anchor": lx > W - m.r - 24 ? "end" : "middle", style: "fill:var(--fg);font-weight:600;font-size:12px"}, last.hri.toFixed(1)));
+  var cross = mk("line", {y1: m.t, y2: H - m.b, stroke: "var(--muted)", "stroke-dasharray": "3 3", style: "display:none"});
+  var hot = mk("circle", {r: 7, fill: "none", stroke: "var(--accent)", "stroke-width": 2, style: "display:none"});
+  svg.appendChild(cross); svg.appendChild(hot);
+  var tip = el("div", "tip"); tip.hidden = true;
+  var hit = mk("rect", {x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent", style: "touch-action:pan-y"});
+  function move(ev) {
+    var box = svg.getBoundingClientRect();
+    var px = (ev.clientX - box.left) * (W / box.width);
+    var bi = 0, bd = 1e9;
+    rows.forEach(function (r, i) { var dd = Math.abs(x(r.date) - px); if (dd < bd) { bd = dd; bi = i; } });
+    var r = rows[bi], cx = x(r.date), sc = box.width / W;
+    cross.setAttribute("x1", cx); cross.setAttribute("x2", cx); cross.style.display = "";
+    hot.setAttribute("cx", cx); hot.setAttribute("cy", y(r.hri)); hot.style.display = "";
+    tip.replaceChildren();
+    tip.appendChild(el("strong", "", fmtY(r.date)));
+    [ "Index " + r.hri.toFixed(1) + ", " + CFG.bands[r.band].name,
+      "Transits " + r.transits + " (" + r.tin + " in, " + r.tout + " out)",
+      "Struck " + r.struck + ", claimed hit " + r.claims,
+      "US-Iran level " + r.mil + ", diplomacy level " + r.dip ].forEach(function (t) { tip.appendChild(el("div", "", t)); });
+    tip.hidden = false;
+    tip.style.left = Math.max(0, Math.min(host.clientWidth - tip.offsetWidth, cx * sc + 12)) + "px";
+    tip.style.top = Math.max(0, y(r.hri) * sc - tip.offsetHeight - 8) + "px";
+  }
+  hit.addEventListener("pointermove", move);
+  hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", function () { tip.hidden = true; cross.style.display = "none"; hot.style.display = "none"; });
+  svg.appendChild(hit);
+  host.appendChild(svg); host.appendChild(tip);
+}
+
+var ROWS = null;
+function render() {
+  if (!ROWS || !ROWS.length) { document.getElementById("err").textContent = "No readings yet."; return; }
+  var rows = ROWS, last = rows[rows.length - 1];
+  var peak = rows[0], low = rows[0];
+  rows.forEach(function (r) { if (r.hri >= peak.hri) peak = r; if (r.hri < low.hri) low = r; });
+
+  var lede = document.getElementById("lede");
+  var txt = "On " + fmt(last.date) + " the index stands at " + last.hri.toFixed(1) + " out of 100 (" + CFG.bands[last.band].name + ")";
+  if (last.delta !== null) txt += ", " + (last.delta > 0 ? "up " : last.delta < 0 ? "down " : "unchanged by ") + Math.abs(last.delta).toFixed(1) + " points from the edition of " + fmt(last.prev);
+  txt += ". The peak so far is " + peak.hri.toFixed(1) + " on " + fmt(peak.date) + " and the low is " + low.hri.toFixed(1) + " on " + fmt(low.date) + ", across " + rows.length + " editions logged.";
+  lede.textContent = txt;
+
+  document.getElementById("hri").textContent = last.hri.toFixed(1);
+  chipFill(document.getElementById("chip"), last.band);
+  var d = document.getElementById("delta");
+  if (last.delta === null) { d.className = "flat"; d.textContent = "First edition"; }
+  else { d.className = dcls(last.delta); d.textContent = sgn(last.delta); }
+
+  drawTrend(rows);
+
+  var tiles = document.getElementById("tiles");
+  tiles.replaceChildren();
+  KEYS.forEach(function (k) {
+    var card = el("article", "card tile");
+    card.appendChild(el("h3", "", NAMES[k]));
+    card.appendChild(el("p", "muted", CFG.weights[k] + "% of the index"));
+    var sc = el("div", "score", String(last.s[k])); sc.appendChild(el("span", "of", "/ 100")); card.appendChild(sc);
+    var chip = el("div", "chip"); chipFill(chip, bandOf(last.s[k])); card.appendChild(chip);
+    var cap = {
+      attacks: last.struck + " vessels struck or disabled in the last 24 h",
+      flow: last.transits + " transits in 24 h (" + last.tin + " in, " + last.tout + " out)",
+      mil: "Level " + last.mil + " of 4: " + CFG.milLabels[last.mil],
+      dip: "Level " + last.dip + " of 4: " + CFG.dipLabels[last.dip],
+      claims: last.claims + " vessels claimed hit, not confirmed"
+    }[k];
+    card.appendChild(el("p", "cap", cap));
+    var dl = el("p", "cap"); var ds = el("span", last.d[k] === null ? "flat" : dcls(last.d[k]), last.d[k] === null ? "first edition" : sgn(last.d[k])); dl.appendChild(ds); dl.appendChild(document.createTextNode(" vs previous")); card.appendChild(dl);
+    card.appendChild(spark(rows, k));
+    tiles.appendChild(card);
+  });
+}
+
+function start() {
+  var fallback = function () {
+    try { ROWS = compute(JSON.parse(document.getElementById("hri-data").textContent).readings || []); render(); }
+    catch (e) { document.getElementById("err").textContent = "Data could not be loaded."; }
+  };
+  if (!window.fetch) { fallback(); return; }
+  fetch(DATA_URL + "?t=" + Date.now(), {cache: "no-store"})
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (j) { ROWS = compute(j.readings || []); render(); })
+    .catch(fallback);
+}
+start();
+var lastW = 0;
+window.addEventListener("resize", function () {
+  var w = document.getElementById("trend").clientWidth;
+  if (w !== lastW) { lastW = w; if (ROWS && ROWS.length) drawTrend(ROWS); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hormuz Maritime Risk Index</title>
+<meta name="robots" content="noindex, nofollow">
+<!--
+  HORMUZ MARITIME RISK INDEX, INTRANET WIDGET
+  Self-contained: no external scripts, fonts or libraries.
+  Host this file together with readings.json (same folder), then embed it in the SharePoint
+  page with the Embed web part as an iframe, for example:
+    <iframe src="https://YOUR-HOST/hormuz-risk-widget.html" width="100%" height="330" frameborder="0"></iframe>
+
+  DATA: the widget reads readings.json from the same folder. If that file cannot be loaded
+  (for example when this file is opened straight from disk), it falls back to the copy in the
+  data block below. Keep the two in step, or just update readings.json.
+  Fields per day: date, tin, tout (inbound and outbound transits), struck (vessels struck in
+  the 24 h window), claims (vessels Iran claims it hit, unconfirmed), mil and dip (levels 0 to 4).
+
+  LINK: set FULL_DASHBOARD_URL below to the address of the full dashboard page.
+-->
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1a19; --muted: #5d5c58; --line: #e1e0d9; --grid: #ececE6;
+    --accent: #2a78d6; --ok: #0c8a0c; --bad: #c0392b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1a1a19; --fg: #f0efec; --muted: #b5b4aa; --line: #383835; --grid: #2c2c2a; --accent: #3987e5; --ok: #3fbf3f; --bad: #ef6b5b; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .w { padding: 12px 14px 10px; max-width: 760px; margin: 0 auto; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .title { font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; }
+  .logo { height: 24px; width: auto; display: block; }
+  .asof { font-size: 12px; color: var(--muted); }
+  .main { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 6px 0 2px; }
+  .big { font-size: 46px; line-height: 1; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .of { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+  .side { display: grid; gap: 4px; justify-items: start; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+  .pips { display: inline-flex; gap: 3px; }
+  .pips i { width: 8px; height: 8px; border-radius: 2px; border: 1px solid var(--line); display: block; }
+  .delta { font-size: 13px; }
+  .up { color: var(--bad); } .down { color: var(--ok); } .flat { color: var(--muted); }
+  .comps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0 4px; }
+  .comp { font-size: 11px; color: var(--muted); }
+  .comp b { display: block; font-size: 13px; color: var(--fg); font-variant-numeric: tabular-nums; }
+  .bar { height: 5px; background: var(--grid); border-radius: 3px; margin-top: 3px; overflow: hidden; }
+  .bar span { display: block; height: 100%; border-radius: 3px; }
+  .chart { position: relative; margin-top: 4px; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart text { font-size: 10px; fill: var(--muted); font-family: inherit; }
+  .tip { position: absolute; pointer-events: none; background: var(--bg); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,.18); padding: 5px 8px; border-radius: 6px; font-size: 11px; white-space: nowrap; z-index: 2; }
+  .tip strong { display: block; }
+  .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .foot a { color: var(--accent); font-weight: 600; font-size: 12px; text-decoration: none; }
+  .foot a:hover { text-decoration: underline; }
+  @media (max-width: 420px) { .big { font-size: 38px; } .comps { grid-template-columns: repeat(3, 1fr); } }
+</style>
+</head>
+<body>
+<div class="w" id="w">
+  <div class="head"><span class="title"><img class="logo" alt="Metrostar" src="data:image/png;base64,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">Hormuz Maritime Risk Index</span><span class="asof" id="asof"></span></div>
+  <div class="main">
+    <div class="big"><span id="hri">...</span><span class="of">/ 100</span></div>
+    <div class="side">
+      <span class="chip" id="chip"></span>
+      <span class="delta" id="delta"></span>
+    </div>
+  </div>
+  <div class="comps" id="comps"></div>
+  <div class="chart" id="chart"></div>
+  <div class="foot"><span id="note">Internal use only.</span><a id="full" href="#" target="_blank" rel="noopener">Full dashboard</a></div>
+</div>
+
+<!-- FALLBACK DATA, used only if readings.json cannot be loaded -->
+<script type="application/json" id="hri-data">
+{
+  "readings": [
+    {"date": "2026-11-09", "tin": 3, "tout": 2, "struck": 3, "claims": 1, "mil": 2, "dip": 2},
+    {"date": "2026-11-10", "tin": 2, "tout": 7, "struck": 0, "claims": 0, "mil": 1, "dip": 2},
+    {"date": "2026-11-11", "tin": 3, "tout": 4, "struck": 1, "claims": 2, "mil": 1, "dip": 3},
+    {"date": "2026-11-12", "tin": 5, "tout": 4, "struck": 1, "claims": 2, "mil": 1, "dip": 3},
+    {"date": "2026-11-13", "tin": 6, "tout": 4, "struck": 0, "claims": 1, "mil": 3, "dip": 2},
+    {"date": "2026-11-16", "tin": 5, "tout": 7, "struck": 2, "claims": 3, "mil": 2, "dip": 3},
+    {"date": "2026-11-19", "tin": 2, "tout": 5, "struck": 2, "claims": 3, "mil": 3, "dip": 3}
+  ]
+}
+</script>
+
+<script>
+/* SETTINGS: change these two lines for your environment */
+var FULL_DASHBOARD_URL = "hormuz-risk-dashboard.html"; /* relative link, or a full address */
+var DATA_URL = "readings.json";
+var MAX_POINTS = 14; /* how many latest editions the trend line shows */
+
+/* Scoring configuration, identical to the full dashboard */
+var CFG = {
+  ceiling: 20,
+  weights: {attacks: 30, flow: 25, mil: 20, dip: 15, claims: 10},
+  bands: [{name: "Low", from: 0}, {name: "Moderate", from: 25}, {name: "Substantial", from: 45}, {name: "High", from: 65}, {name: "Extreme", from: 85}],
+  struckScore: [0, 50, 80, 100],
+  claimStep: 30,
+  levels: [0, 25, 50, 75, 100]
+};
+var KEYS = ["attacks", "flow", "mil", "dip", "claims"];
+var LABELS = {attacks: "Attacks", flow: "Transit flow", mil: "Military", dip: "Diplomacy", claims: "Claims"};
+var BAND_COLOR = ["#1fb86a", "#f5b800", "#f27a24", "#e8383d", "#c4122f"];
+var BAND_FILL = [0.26, 0.30, 0.32, 0.34, 0.42];
+var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function r1(v) { return Math.round(v * 10) / 10; }
+function pd(s) { var p = s.split("-"); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+function fmt(s) { var p = s.split("-"); return +p[2] + " " + MON[+p[1] - 1]; }
+function bandOf(v) { var b = 0; CFG.bands.forEach(function (x, i) { if (v >= x.from) b = i; }); return b; }
+function clampLevel(v) { return Math.min(4, Math.max(0, Number(v) || 0)); }
+
+function compute(readings) {
+  var rows = readings.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }).map(function (r) {
+    var t = (Number(r.tin) || 0) + (Number(r.tout) || 0);
+    var s = {
+      attacks: CFG.struckScore[Math.min(3, Number(r.struck) || 0)],
+      flow: Math.max(0, Math.round(100 * (1 - t / CFG.ceiling))),
+      mil: CFG.levels[clampLevel(r.mil)],
+      dip: CFG.levels[clampLevel(r.dip)],
+      claims: Math.min(100, CFG.claimStep * (Number(r.claims) || 0))
+    };
+    var total = 0;
+    KEYS.forEach(function (k) { total += s[k] * CFG.weights[k] / 100; });
+    return {date: r.date, transits: t, struck: Number(r.struck) || 0, claims: Number(r.claims) || 0, s: s, hri: r1(total), band: bandOf(total)};
+  });
+  rows.forEach(function (r, i) { r.delta = i ? r1(r.hri - rows[i - 1].hri) : null; });
+  return rows;
+}
+
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+
+var DATA = null;
+function render() {
+  var data = DATA;
+  if (!data) return;
+  var all = compute(data.readings || []);
+  if (!all.length) { document.getElementById("note").textContent = "No readings yet."; return; }
+  var last = all[all.length - 1];
+
+  document.getElementById("asof").textContent = "Edition " + fmt(last.date);
+  document.getElementById("hri").textContent = last.hri.toFixed(1);
+
+  var chip = document.getElementById("chip");
+  chip.replaceChildren();
+  var pips = el("span", "pips");
+  for (var k = 0; k < 5; k++) { var p = el("i"); p.style.background = k <= last.band ? BAND_COLOR[last.band] : "transparent"; p.style.borderColor = k <= last.band ? BAND_COLOR[last.band] : ""; pips.appendChild(p); }
+  chip.appendChild(pips);
+  chip.appendChild(el("span", "", CFG.bands[last.band].name));
+
+  var d = document.getElementById("delta");
+  if (last.delta === null) { d.className = "delta flat"; d.textContent = "First edition"; }
+  else if (last.delta === 0) { d.className = "delta flat"; d.textContent = "No change vs previous edition"; }
+  else { d.className = "delta " + (last.delta > 0 ? "up" : "down"); d.textContent = (last.delta > 0 ? "▲ +" : "▼ -") + Math.abs(last.delta).toFixed(1) + " vs previous edition"; }
+
+  var comps = document.getElementById("comps");
+  comps.replaceChildren();
+  KEYS.forEach(function (key) {
+    var v = last.s[key];
+    var c = el("div", "comp");
+    c.appendChild(el("span", "", LABELS[key]));
+    c.appendChild(el("b", "", String(v)));
+    var bar = el("div", "bar"); var fill = el("span"); fill.style.width = v + "%"; fill.style.background = BAND_COLOR[bandOf(v)]; bar.appendChild(fill); c.appendChild(bar);
+    comps.appendChild(c);
+  });
+
+  var link = document.getElementById("full");
+  if (FULL_DASHBOARD_URL) { link.href = FULL_DASHBOARD_URL; } else { link.style.display = "none"; }
+
+  drawChart(all.slice(-MAX_POINTS));
+}
+
+function drawChart(rows) {
+  var host = document.getElementById("chart");
+  host.replaceChildren();
+  var NS = "http://www.w3.org/2000/svg";
+  var W = Math.max(240, host.clientWidth || 420), H = 150;
+  var m = {t: 10, r: 62, b: 20, l: 26};
+  var t0 = pd(rows[0].date), t1 = pd(rows[rows.length - 1].date), pad = 12 * 3600 * 1000;
+  var lo = t0 - pad, hi = t1 + pad;
+  function x(date) { return m.l + (pd(date) - lo) / (hi - lo) * (W - m.l - m.r); }
+  function y(v) { return H - m.b - v / 100 * (H - m.t - m.b); }
+  function mk(name, attrs, text) { var n = document.createElementNS(NS, name); for (var a in attrs) n.setAttribute(a, attrs[a]); if (text !== undefined) n.textContent = text; return n; }
+  var svg = mk("svg", {viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "Hormuz Risk Index over the last " + rows.length + " editions, latest " + rows[rows.length - 1].hri});
+  CFG.bands.forEach(function (b, i) {
+    var top = i + 1 < CFG.bands.length ? CFG.bands[i + 1].from : 100;
+    svg.appendChild(mk("rect", {x: m.l, y: y(top), width: W - m.l - m.r, height: y(b.from) - y(top), fill: BAND_COLOR[i], "fill-opacity": BAND_FILL[i]}));
+    svg.appendChild(mk("text", {x: W - m.r + 6, y: (y(top) + y(b.from)) / 2 + 3}, b.name));
+  });
+  [0, 25, 45, 65, 85, 100].forEach(function (tv) {
+    svg.appendChild(mk("line", {x1: m.l, x2: W - m.r, y1: y(tv), y2: y(tv), stroke: "var(--grid)", "stroke-width": 1}));
+    svg.appendChild(mk("text", {x: m.l - 5, y: y(tv) + 3, "text-anchor": "end"}, String(tv)));
+  });
+  var every = Math.max(1, Math.ceil(rows.length * 46 / (W - m.l - m.r)));
+  rows.forEach(function (r, i) {
+    if (i % every === 0 || i === rows.length - 1) svg.appendChild(mk("text", {x: x(r.date), y: H - 5, "text-anchor": "middle"}, fmt(r.date)));
+  });
+  var pts = rows.map(function (r) { return x(r.date) + "," + y(r.hri); }).join(" ");
+  svg.appendChild(mk("polyline", {points: pts, fill: "none", stroke: "var(--accent)", "stroke-width": 2, "stroke-linejoin": "round"}));
+  rows.forEach(function (r) { svg.appendChild(mk("circle", {cx: x(r.date), cy: y(r.hri), r: 4, fill: "var(--accent)", stroke: "var(--bg)", "stroke-width": 2})); });
+  var lr = rows[rows.length - 1], lx = x(lr.date);
+  svg.appendChild(mk("text", {x: lx, y: y(lr.hri) - 8, "text-anchor": lx > W - m.r - 20 ? "end" : "middle", style: "fill:var(--fg);font-weight:700;font-size:11px"}, lr.hri.toFixed(1)));
+
+  var tip = el("div", "tip"); tip.hidden = true;
+  var cross = mk("line", {y1: m.t, y2: H - m.b, stroke: "var(--muted)", "stroke-dasharray": "3 3", style: "display:none"});
+  svg.appendChild(cross);
+  var hit = mk("rect", {x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent", style: "touch-action:pan-y"});
+  function move(ev) {
+    var box = svg.getBoundingClientRect();
+    var px = (ev.clientX - box.left) * (W / box.width);
+    var bi = 0, bd = 1e9;
+    rows.forEach(function (r, i) { var dd = Math.abs(x(r.date) - px); if (dd < bd) { bd = dd; bi = i; } });
+    var r = rows[bi], cx = x(r.date);
+    cross.setAttribute("x1", cx); cross.setAttribute("x2", cx); cross.style.display = "";
+    tip.replaceChildren();
+    tip.appendChild(el("strong", "", fmt(r.date) + ": " + r.hri.toFixed(1) + ", " + CFG.bands[r.band].name));
+    tip.appendChild(el("div", "", r.transits + " transits, " + r.struck + " struck, " + r.claims + " claimed"));
+    tip.hidden = false;
+    var scale = box.width / W;
+    tip.style.left = Math.max(0, Math.min(host.clientWidth - tip.offsetWidth, cx * scale - tip.offsetWidth / 2)) + "px";
+    tip.style.top = Math.max(0, y(r.hri) * scale - tip.offsetHeight - 10) + "px";
+  }
+  hit.addEventListener("pointermove", move);
+  hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", function () { tip.hidden = true; cross.style.display = "none"; });
+  svg.appendChild(hit);
+  host.appendChild(svg);
+  host.appendChild(tip);
+}
+
+function start() {
+  var fallback = function () {
+    try { DATA = JSON.parse(document.getElementById("hri-data").textContent); render(); }
+    catch (e) { document.getElementById("note").textContent = "Data could not be loaded."; }
+  };
+  if (!window.fetch) { fallback(); return; }
+  fetch(DATA_URL + "?t=" + Date.now(), {cache: "no-store"})
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (j) { DATA = j; render(); })
+    .catch(fallback);
+}
+start();
+var lastW = 0;
+window.addEventListener("resize", function () {
+  var w = document.getElementById("chart").clientWidth;
+  if (w !== lastW) { lastW = w; render(); }
+});
+</script>
+</body>
+</html>

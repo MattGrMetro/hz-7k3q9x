@@ -1,0 +1,11 @@
+{
+  "readings": [
+    {"date": "2026-11-09", "tin": 3, "tout": 2, "struck": 3, "claims": 1, "mil": 2, "dip": 2},
+    {"date": "2026-11-10", "tin": 2, "tout": 7, "struck": 0, "claims": 0, "mil": 1, "dip": 2},
+    {"date": "2026-11-11", "tin": 3, "tout": 4, "struck": 1, "claims": 2, "mil": 1, "dip": 3},
+    {"date": "2026-11-12", "tin": 5, "tout": 4, "struck": 1, "claims": 2, "mil": 1, "dip": 3},
+    {"date": "2026-11-13", "tin": 6, "tout": 4, "struck": 0, "claims": 1, "mil": 3, "dip": 2},
+    {"date": "2026-11-16", "tin": 5, "tout": 7, "struck": 2, "claims": 3, "mil": 2, "dip": 3},
+    {"date": "2026-11-19", "tin": 2, "tout": 5, "struck": 2, "claims": 3, "mil": 3, "dip": 3}
+  ]
+}
