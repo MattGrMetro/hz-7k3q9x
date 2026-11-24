@@ -10,7 +10,7 @@
   Self-contained: no external scripts, fonts or libraries.
   Host this file together with readings.json (same folder), then embed it in the SharePoint
   page with the Embed web part as an iframe, for example:
-    <iframe src="https://YOUR-HOST/hormuz-risk-widget.html" width="100%" height="330" frameborder="0"></iframe>
+    <iframe src="https://YOUR-HOST/hormuz-risk-widget.html" width="100%" height="150" frameborder="0"></iframe>
 
   DATA: the widget reads readings.json from the same folder. If that file cannot be loaded
   (for example when this file is opened straight from disk), it falls back to the copy in the
@@ -30,49 +30,42 @@
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
-  .w { padding: 12px 14px 10px; max-width: 760px; margin: 0 auto; }
-  .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-  .title { font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; }
-  .logo { height: 24px; width: auto; display: block; }
-  .asof { font-size: 12px; color: var(--muted); }
-  .main { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 6px 0 2px; }
-  .big { font-size: 46px; line-height: 1; font-variant-numeric: tabular-nums; font-weight: 600; }
-  .of { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 4px; }
-  .side { display: grid; gap: 4px; justify-items: start; }
-  .chip { display: inline-flex; align-items: center; gap: 7px; padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+  .w { padding: 8px 10px 6px; max-width: 760px; margin: 0 auto; }
+  .top { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin: 0 56px 0 24px; } /* edges match the coloured chart area (24 px axis, 56 px band labels) */
+  .cell { border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .cell.brand { border: 0; flex-direction: column; align-items: flex-start; justify-content: center; gap: 3px; padding: 5px 0; }
+  .logo { height: 22px; width: auto; display: block; }
+  .title { font-weight: 600; font-size: 14px; line-height: 1.2; }
+  .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 2px; font-size: 11px; color: var(--muted); }
+  .foot a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .foot a:hover { text-decoration: underline; }
+  .big { font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .of { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 3px; }
+  .side { display: grid; gap: 3px; justify-items: start; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 1px 9px; border: 1px solid var(--line); border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
   .pips { display: inline-flex; gap: 3px; }
-  .pips i { width: 8px; height: 8px; border-radius: 2px; border: 1px solid var(--line); display: block; }
-  .delta { font-size: 13px; }
+  .pips i { width: 7px; height: 7px; border-radius: 2px; border: 1px solid var(--line); display: block; }
+  .delta { font-size: 12px; white-space: nowrap; }
   .up { color: var(--bad); } .down { color: var(--ok); } .flat { color: var(--muted); }
-  .comps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0 4px; }
-  .comp { font-size: 11px; color: var(--muted); }
-  .comp b { display: block; font-size: 13px; color: var(--fg); font-variant-numeric: tabular-nums; }
-  .bar { height: 5px; background: var(--grid); border-radius: 3px; margin-top: 3px; overflow: hidden; }
-  .bar span { display: block; height: 100%; border-radius: 3px; }
   .chart { position: relative; margin-top: 4px; }
   .chart svg { display: block; width: 100%; height: auto; }
-  .chart text { font-size: 10px; fill: var(--muted); font-family: inherit; }
-  .tip { position: absolute; pointer-events: none; background: var(--bg); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,.18); padding: 5px 8px; border-radius: 6px; font-size: 11px; white-space: nowrap; z-index: 2; }
+  .chart text { font-size: 9px; fill: var(--muted); font-family: inherit; }
+  .tip { position: absolute; pointer-events: none; background: var(--bg); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,.18); padding: 4px 8px; border-radius: 6px; font-size: 11px; white-space: nowrap; z-index: 2; }
   .tip strong { display: block; }
-  .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 6px; font-size: 11px; color: var(--muted); }
-  .foot a { color: var(--accent); font-weight: 600; font-size: 12px; text-decoration: none; }
-  .foot a:hover { text-decoration: underline; }
-  @media (max-width: 420px) { .big { font-size: 38px; } .comps { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 420px) { .top { margin: 0 52px 0 22px; } .cell { padding: 5px 8px; gap: 8px; } .cell.brand { padding: 5px 0; gap: 2px; flex-shrink: 0; } .logo { height: 18px; } .title { max-width: 92px; text-wrap: balance; } .of { display: none; } .top { grid-template-columns: 92px 1fr; gap: 4px; } .cell:not(.brand) { justify-content: center; } .pips { display: none; } .cell:not(.brand) { padding: 5px 6px; gap: 6px; } .title { font-size: 11px; } .big { font-size: 26px; } .delta { font-size: 10px; } .chip { font-size: 10px; padding: 1px 6px; } .of { display: none; } }
 </style>
 </head>
 <body>
 <div class="w" id="w">
-  <div class="head"><span class="title"><img class="logo" alt="Metrostar" src="data:image/png;base64,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">Hormuz Maritime Risk Index</span><span class="asof" id="asof"></span></div>
-  <div class="main">
-    <div class="big"><span id="hri">...</span><span class="of">/ 100</span></div>
-    <div class="side">
-      <span class="chip" id="chip"></span>
-      <span class="delta" id="delta"></span>
+  <div class="top">
+    <div class="cell brand"><img class="logo" alt="Metrostar" src="data:image/png;base64,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"><div class="title">Hormuz Maritime Risk Index</div></div>
+    <div class="cell">
+      <div class="big"><span id="hri">...</span><span class="of">/ 100</span></div>
+      <div class="side"><span class="chip" id="chip"></span><span class="delta" id="delta"></span></div>
     </div>
   </div>
-  <div class="comps" id="comps"></div>
   <div class="chart" id="chart"></div>
-  <div class="foot"><span id="note">Internal use only.</span><a id="full" href="#" target="_blank" rel="noopener">Full dashboard</a></div>
+  <div class="foot"><span><span id="asof"></span><span id="note"></span></span><a id="full" href="#" target="_blank" rel="noopener">Full dashboard</a></div>
 </div>
 
 <!-- FALLBACK DATA, used only if readings.json cannot be loaded -->
@@ -85,7 +78,9 @@
     {"date": "2026-11-12", "tin": 5, "tout": 4, "struck": 1, "claims": 2, "mil": 1, "dip": 3},
     {"date": "2026-11-13", "tin": 6, "tout": 4, "struck": 0, "claims": 1, "mil": 3, "dip": 2},
     {"date": "2026-11-16", "tin": 5, "tout": 7, "struck": 2, "claims": 3, "mil": 2, "dip": 3},
-    {"date": "2026-11-19", "tin": 2, "tout": 5, "struck": 2, "claims": 3, "mil": 3, "dip": 3}
+    {"date": "2026-11-19", "tin": 2, "tout": 5, "struck": 2, "claims": 3, "mil": 3, "dip": 3},
+    {"date": "2026-11-20", "tin": 1, "tout": 2, "struck": 0, "claims": 5, "mil": 2, "dip": 3},
+    {"date": "2026-11-23", "tin": 2, "tout": 1, "struck": 2, "claims": 0, "mil": 1, "dip": 2}
   ]
 }
 </script>
@@ -145,7 +140,7 @@ function render() {
   if (!all.length) { document.getElementById("note").textContent = "No readings yet."; return; }
   var last = all[all.length - 1];
 
-  document.getElementById("asof").textContent = "Edition " + fmt(last.date);
+  document.getElementById("asof").textContent = "Update " + fmt(last.date);
   document.getElementById("hri").textContent = last.hri.toFixed(1);
 
   var chip = document.getElementById("chip");
@@ -157,19 +152,8 @@ function render() {
 
   var d = document.getElementById("delta");
   if (last.delta === null) { d.className = "delta flat"; d.textContent = "First edition"; }
-  else if (last.delta === 0) { d.className = "delta flat"; d.textContent = "No change vs previous edition"; }
-  else { d.className = "delta " + (last.delta > 0 ? "up" : "down"); d.textContent = (last.delta > 0 ? "▲ +" : "▼ -") + Math.abs(last.delta).toFixed(1) + " vs previous edition"; }
-
-  var comps = document.getElementById("comps");
-  comps.replaceChildren();
-  KEYS.forEach(function (key) {
-    var v = last.s[key];
-    var c = el("div", "comp");
-    c.appendChild(el("span", "", LABELS[key]));
-    c.appendChild(el("b", "", String(v)));
-    var bar = el("div", "bar"); var fill = el("span"); fill.style.width = v + "%"; fill.style.background = BAND_COLOR[bandOf(v)]; bar.appendChild(fill); c.appendChild(bar);
-    comps.appendChild(c);
-  });
+  else if (last.delta === 0) { d.className = "delta flat"; d.textContent = "No change vs previous"; }
+  else { d.className = "delta " + (last.delta > 0 ? "up" : "down"); d.textContent = (last.delta > 0 ? "▲ +" : "▼ -") + Math.abs(last.delta).toFixed(1) + " vs previous"; }
 
   var link = document.getElementById("full");
   if (FULL_DASHBOARD_URL) { link.href = FULL_DASHBOARD_URL; } else { link.style.display = "none"; }
@@ -181,8 +165,8 @@ function drawChart(rows) {
   var host = document.getElementById("chart");
   host.replaceChildren();
   var NS = "http://www.w3.org/2000/svg";
-  var W = Math.max(240, host.clientWidth || 420), H = 150;
-  var m = {t: 10, r: 62, b: 20, l: 26};
+  var W = Math.max(240, host.clientWidth || 420), H = 86;
+  var m = {t: 6, r: 56, b: 15, l: 24};
   var t0 = pd(rows[0].date), t1 = pd(rows[rows.length - 1].date), pad = 12 * 3600 * 1000;
   var lo = t0 - pad, hi = t1 + pad;
   function x(date) { return m.l + (pd(date) - lo) / (hi - lo) * (W - m.l - m.r); }
@@ -200,13 +184,13 @@ function drawChart(rows) {
   });
   var every = Math.max(1, Math.ceil(rows.length * 46 / (W - m.l - m.r)));
   rows.forEach(function (r, i) {
-    if (i % every === 0 || i === rows.length - 1) svg.appendChild(mk("text", {x: x(r.date), y: H - 5, "text-anchor": "middle"}, fmt(r.date)));
+    if (i % every === 0 || i === rows.length - 1) svg.appendChild(mk("text", {x: x(r.date), y: H - 3, "text-anchor": "middle"}, fmt(r.date)));
   });
   var pts = rows.map(function (r) { return x(r.date) + "," + y(r.hri); }).join(" ");
-  svg.appendChild(mk("polyline", {points: pts, fill: "none", stroke: "var(--accent)", "stroke-width": 2, "stroke-linejoin": "round"}));
-  rows.forEach(function (r) { svg.appendChild(mk("circle", {cx: x(r.date), cy: y(r.hri), r: 4, fill: "var(--accent)", stroke: "var(--bg)", "stroke-width": 2})); });
+  svg.appendChild(mk("polyline", {points: pts, fill: "none", stroke: "var(--accent)", "stroke-width": 2.5, "stroke-linejoin": "round"}));
+  rows.forEach(function (r) { svg.appendChild(mk("circle", {cx: x(r.date), cy: y(r.hri), r: 3.5, fill: "var(--accent)", stroke: "var(--bg)", "stroke-width": 2})); });
   var lr = rows[rows.length - 1], lx = x(lr.date);
-  svg.appendChild(mk("text", {x: lx, y: y(lr.hri) - 8, "text-anchor": lx > W - m.r - 20 ? "end" : "middle", style: "fill:var(--fg);font-weight:700;font-size:11px"}, lr.hri.toFixed(1)));
+  svg.appendChild(mk("text", {x: lx, y: y(lr.hri) - 6, "text-anchor": lx > W - m.r - 20 ? "end" : "middle", style: "fill:var(--fg);font-weight:700;font-size:11px"}, lr.hri.toFixed(1)));
 
   var tip = el("div", "tip"); tip.hidden = true;
   var cross = mk("line", {y1: m.t, y2: H - m.b, stroke: "var(--muted)", "stroke-dasharray": "3 3", style: "display:none"});
