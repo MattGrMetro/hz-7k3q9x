@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hormuz Maritime Risk Index</title>
+<title>Hormuz Strait Risk Index</title>
 <meta name="robots" content="noindex, nofollow">
 <!--
-  HORMUZ MARITIME RISK INDEX, INTRANET WIDGET
+  HORMUZ STRAIT RISK INDEX, INTRANET WIDGET
   Self-contained: no external scripts, fonts or libraries.
   Host this file together with readings.json (same folder), then embed it in the SharePoint
   page with the Embed web part as an iframe, for example:
@@ -34,8 +34,7 @@
   .top { display: grid; grid-template-columns: auto auto auto; justify-content: start; align-items: center; gap: 10px; margin: 0 0 0 24px; } /* edges match the coloured chart area (24 px axis, 56 px band labels) */
   .cell { border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; display: flex; align-items: center; justify-content: flex-start; gap: 12px; min-width: 0; }
   .cell.brand { border: 0; padding: 5px 0; }
-  .logo { height: 34px; width: auto; display: block; }
-  .title { font-weight: 600; font-size: 14px; line-height: 1.25; white-space: nowrap; }
+  .title { font-weight: 700; font-size: 19px; line-height: 1.25; white-space: nowrap; }
   .note { font-size: 11px; color: var(--muted); }
   .chart a { cursor: pointer; }
   .big { font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
@@ -56,8 +55,7 @@
     .top { margin: 0 0 0 24px; gap: 4px; grid-template-columns: auto auto auto; }
     .cell { padding: 4px 6px; gap: 5px; }
     .cell.brand { padding: 4px 0; }
-    .logo { height: 24px; }
-    .title { font-size: 9px; }
+    .title { font-size: 13px; }
     .big { font-size: 22px; }
     .of { display: none; }
     .chip { font-size: 8.5px; padding: 1px 5px; gap: 4px; letter-spacing: .02em; }
@@ -70,8 +68,7 @@
 <body>
 <div class="w" id="w">
   <div class="top">
-    <div class="cell brand"><img class="logo" alt="Metrostar" src="data:image/png;base64,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"></div>
-    <div class="cell brand"><div class="title">Hormuz Maritime<br>Risk Index</div></div>
+    <div class="cell brand"><div class="title">Hormuz Strait<br>Risk Index</div></div>
     <div class="cell">
       <div class="big"><span id="hri">...</span><span class="of">/ 100</span></div>
       <div class="side"><span class="chip" id="chip"></span><span class="delta" id="delta"></span></div>
