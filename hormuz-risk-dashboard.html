@@ -21,17 +21,19 @@
   * { box-sizing:border-box; }
   html,body { margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
   .page { max-width:1100px; margin:0 auto; padding:20px 16px 32px; display:grid; gap:16px; }
-  .brand { display:flex; align-items:center; }
+  header.top { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .headtext { flex:1 1 320px; min-width:0; text-align:left; }
+  .brand { display:flex; align-items:center; flex:none; }
   .logo-chip { background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 14px; height:64px; display:inline-flex; align-items:center; }
   .logo-chip img { height:44px; width:auto; display:block; }
-  h1 { font-family:Georgia,"Times New Roman",serif; font-weight:400; font-size:30px; margin:6px 0 4px; }
+  h1 { font-family:Georgia,"Times New Roman",serif; font-weight:400; font-size:30px; margin:0 0 4px; }
   h2 { font-size:16px; font-weight:600; margin:0 0 4px; }
   h3 { font-size:14px; font-weight:600; margin:0; }
   p { margin:0; }
   .kicker,.muted,.cap { color:var(--muted); font-size:12px; }
   .lede { font-size:15px; line-height:1.5; }
   .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; }
-  .hero { display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; }
+  .hero { display:flex; flex-wrap:wrap; gap:16px 40px; align-items:center; justify-content:flex-start; max-width:460px; margin-right:auto; }
   .big { font-family:Georgia,"Times New Roman",serif; font-size:64px; line-height:1; font-variant-numeric:tabular-nums; }
   .of { font-size:12px; color:var(--muted); margin-left:6px; font-family:system-ui,sans-serif; }
   .hero-side { display:grid; gap:8px; justify-items:start; }
@@ -53,11 +55,12 @@
 </head>
 <body>
 <div class="page">
-<header>
+<header class="top">
   <div class="brand"><div class="logo-chip"><img alt="Metrostar" src="data:image/png;base64,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"></div></div>
-  <p class="kicker" style="margin-top:12px">Maritime risk index, Strait of Hormuz</p>
-  <h1>Hormuz Maritime Risk Index</h1>
-  <p class="lede" id="lede"></p>
+  <div class="headtext">
+    <h1>Hormuz Maritime Risk Index</h1>
+    <p class="lede" id="lede"></p>
+  </div>
 </header>
 
 <section class="card hero" aria-label="Current index">
@@ -91,7 +94,9 @@
     {"date": "2026-11-12", "tin": 5, "tout": 4, "struck": 1, "claims": 2, "mil": 1, "dip": 3},
     {"date": "2026-11-13", "tin": 6, "tout": 4, "struck": 0, "claims": 1, "mil": 3, "dip": 2},
     {"date": "2026-11-16", "tin": 5, "tout": 7, "struck": 2, "claims": 3, "mil": 2, "dip": 3},
-    {"date": "2026-11-19", "tin": 2, "tout": 5, "struck": 2, "claims": 3, "mil": 3, "dip": 3}
+    {"date": "2026-11-19", "tin": 2, "tout": 5, "struck": 2, "claims": 3, "mil": 3, "dip": 3},
+    {"date": "2026-11-20", "tin": 1, "tout": 2, "struck": 0, "claims": 5, "mil": 2, "dip": 3},
+    {"date": "2026-11-23", "tin": 2, "tout": 1, "struck": 2, "claims": 0, "mil": 1, "dip": 2}
   ]
 }
 </script>
@@ -110,8 +115,9 @@ var CFG = {
 };
 var KEYS = ["attacks", "flow", "mil", "dip", "claims"];
 var NAMES = {attacks: "Attacks on merchant ships", flow: "Transit flow", mil: "US and Iran military activity", dip: "Diplomacy", claims: "Unverified Iranian claims"};
-var BAND_COLOR = ["#1fb86a", "#f5b800", "#f27a24", "#e8383d", "#c4122f"];
-var BAND_FILL = [0.26, 0.30, 0.32, 0.34, 0.42];
+var BAND_COLOR = ["#12b35e", "#ffc400", "#ff7a14", "#f0262c", "#e60012"];
+var TILE_COLOR = ["#1fb86a", "#f5b800", "#f27a24", "#e8383d", "#c4122f"]; /* component tiles keep the original palette */
+var BAND_FILL = [0.50, 0.55, 0.55, 0.55, 0.85];
 var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 var NS = "http://www.w3.org/2000/svg";
 
@@ -150,10 +156,11 @@ function compute(readings) {
   return rows;
 }
 
-function chipFill(host, i) {
+function chipFill(host, i, pal) {
+  pal = pal || BAND_COLOR;
   host.replaceChildren();
   var pips = el("span", "pips");
-  for (var k = 0; k < 5; k++) { var p = el("i"); p.style.background = k <= i ? BAND_COLOR[i] : "transparent"; p.style.borderColor = k <= i ? BAND_COLOR[i] : ""; pips.appendChild(p); }
+  for (var k = 0; k < 5; k++) { var p = el("i"); p.style.background = k <= i ? pal[i] : "transparent"; p.style.borderColor = k <= i ? pal[i] : ""; pips.appendChild(p); }
   host.appendChild(pips);
   host.appendChild(el("span", "", CFG.bands[i].name));
 }
@@ -254,7 +261,7 @@ function render() {
     card.appendChild(el("h3", "", NAMES[k]));
     card.appendChild(el("p", "muted", CFG.weights[k] + "% of the index"));
     var sc = el("div", "score", String(last.s[k])); sc.appendChild(el("span", "of", "/ 100")); card.appendChild(sc);
-    var chip = el("div", "chip"); chipFill(chip, bandOf(last.s[k])); card.appendChild(chip);
+    var chip = el("div", "chip"); chipFill(chip, bandOf(last.s[k]), TILE_COLOR); card.appendChild(chip);
     var cap = {
       attacks: last.struck + " vessels struck or disabled in the last 24 h",
       flow: last.transits + " transits in 24 h (" + last.tin + " in, " + last.tout + " out)",
