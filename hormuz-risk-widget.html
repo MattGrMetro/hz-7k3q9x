@@ -10,7 +10,7 @@
   Self-contained: no external scripts, fonts or libraries.
   Host this file together with readings.json (same folder), then embed it in the SharePoint
   page with the Embed web part as an iframe, for example:
-    <iframe src="https://YOUR-HOST/hormuz-risk-widget.html" width="100%" height="150" frameborder="0"></iframe>
+    <iframe src="https://YOUR-HOST/hormuz-risk-widget.html" width="100%" height="140" frameborder="0"></iframe>
 
   DATA: the widget reads readings.json from the same folder. If that file cannot be loaded
   (for example when this file is opened straight from disk), it falls back to the copy in the
@@ -18,7 +18,7 @@
   Fields per day: date, tin, tout (inbound and outbound transits), struck (vessels struck in
   the 24 h window), claims (vessels Iran claims it hit, unconfirmed), mil and dip (levels 0 to 4).
 
-  LINK: set FULL_DASHBOARD_URL below to the address of the full dashboard page.
+  LINK: clicking the coloured chart area opens the page set in FULL_DASHBOARD_URL below, in a new tab.
 -->
 <style>
   :root {
@@ -32,13 +32,12 @@
   html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
   .w { padding: 8px 10px 6px; max-width: 760px; margin: 0 auto; }
   .top { display: grid; grid-template-columns: auto auto auto; justify-content: start; align-items: center; gap: 10px; margin: 0 0 0 24px; } /* edges match the coloured chart area (24 px axis, 56 px band labels) */
-  .cell { border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .cell { border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; display: flex; align-items: center; justify-content: flex-start; gap: 12px; min-width: 0; }
   .cell.brand { border: 0; padding: 5px 0; }
   .logo { height: 34px; width: auto; display: block; }
   .title { font-weight: 600; font-size: 14px; line-height: 1.25; white-space: nowrap; }
-  .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 2px; font-size: 11px; color: var(--muted); }
-  .foot a { color: var(--accent); font-weight: 600; text-decoration: underline; }
-  .foot a:hover { text-decoration: none; }
+  .note { font-size: 11px; color: var(--muted); }
+  .chart a { cursor: pointer; }
   .big { font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
   .of { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 3px; }
   .side { display: grid; gap: 3px; justify-items: start; }
@@ -52,7 +51,20 @@
   .chart text { font-size: 9px; fill: var(--muted); font-family: inherit; }
   .tip { position: absolute; pointer-events: none; background: var(--bg); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,.18); padding: 4px 8px; border-radius: 6px; font-size: 11px; white-space: nowrap; z-index: 2; }
   .tip strong { display: block; }
-  @media (max-width: 420px) { .top { margin: 0 0 0 22px; } .cell { padding: 5px 8px; gap: 8px; } .cell.brand { padding: 5px 0; } .logo { height: 22px; } .top { grid-template-columns: auto auto minmax(0,1fr); } .of { display: none; } .top { gap: 6px; } .cell:not(.brand) { justify-content: center; } .pips { display: none; } .cell:not(.brand) { padding: 5px 6px; gap: 6px; } .title { font-size: 10px; } .w { padding-left: 6px; padding-right: 4px; } .foot { font-size: 9px; white-space: nowrap; } .chart text { font-size: 8px; } .big { font-size: 22px; } .delta { font-size: 9px; } .chip { font-size: 9px; padding: 1px 5px; letter-spacing: .02em; } .of { display: none; } }
+  @media (max-width: 420px) {
+    .w { padding-left: 6px; padding-right: 4px; }
+    .top { margin: 0 0 0 24px; gap: 4px; grid-template-columns: auto auto auto; }
+    .cell { padding: 4px 6px; gap: 5px; }
+    .cell.brand { padding: 4px 0; }
+    .logo { height: 24px; }
+    .title { font-size: 9px; }
+    .big { font-size: 22px; }
+    .of { display: none; }
+    .chip { font-size: 8.5px; padding: 1px 5px; gap: 4px; letter-spacing: .02em; }
+    .pips { gap: 2px; } .pips i { width: 5px; height: 5px; }
+    .delta { font-size: 9px; }
+    .chart text { font-size: 8px; }
+  }
 </style>
 </head>
 <body>
@@ -66,7 +78,7 @@
     </div>
   </div>
   <div class="chart" id="chart"></div>
-  <div class="foot"><span><span id="asof"></span><span id="note"></span></span><a id="full" href="#" target="_blank" rel="noopener">Click for full dashboard</a></div>
+  <div class="note" id="note"></div>
 </div>
 
 <!-- FALLBACK DATA, used only if readings.json cannot be loaded -->
@@ -141,7 +153,6 @@ function render() {
   if (!all.length) { document.getElementById("note").textContent = "No readings yet."; return; }
   var last = all[all.length - 1];
 
-  document.getElementById("asof").textContent = "Last update received on " + fmt(last.date);
   document.getElementById("hri").textContent = last.hri.toFixed(1);
 
   var chip = document.getElementById("chip");
@@ -156,23 +167,20 @@ function render() {
   else if (last.delta === 0) { d.className = "delta flat"; d.textContent = "No change vs previous"; }
   else { d.className = "delta " + (last.delta > 0 ? "up" : "down"); d.textContent = (last.delta > 0 ? "▲ +" : "▼ -") + Math.abs(last.delta).toFixed(1) + " vs previous"; }
 
-  var link = document.getElementById("full");
-  if (FULL_DASHBOARD_URL) { link.href = FULL_DASHBOARD_URL; } else { link.style.display = "none"; }
-
   drawChart(all.slice(-MAX_POINTS));
 }
 
-/* Chart and footer end at the right edge of the top row (the index cell). */
+/* The coloured chart area ends at the right edge of the top row (the index cell). */
+function rightMargin() { return document.getElementById("w").clientWidth < 430 ? 48 : 56; }
 function fitWidth() {
-  var host = document.getElementById("chart"), foot = document.querySelector(".foot");
-  host.style.width = foot.style.width = foot.style.marginLeft = "";
+  var host = document.getElementById("chart");
+  host.style.width = "";
   var cells = document.querySelectorAll(".top .cell"), last = cells[cells.length - 1];
   var span = last.getBoundingClientRect().right - host.getBoundingClientRect().left;
-  var avail = host.parentNode.clientWidth;
-  var chartW = Math.min(avail, Math.max(240, Math.round(span) + 56));
+  var cs = getComputedStyle(host.parentNode);
+  var avail = host.parentNode.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  var chartW = Math.min(avail, Math.max(240, Math.round(span) + rightMargin()));
   host.style.width = chartW + "px";
-  foot.style.marginLeft = "24px";
-  foot.style.width = (chartW - 24 - 56) + "px";
 }
 
 function drawChart(rows) {
@@ -181,7 +189,7 @@ function drawChart(rows) {
   fitWidth();
   var NS = "http://www.w3.org/2000/svg";
   var W = Math.max(240, host.clientWidth || 420), H = 86;
-  var m = {t: 6, r: 56, b: 15, l: 24};
+  var m = {t: 6, r: rightMargin(), b: 15, l: 24};
   var t0 = pd(rows[0].date), t1 = pd(rows[rows.length - 1].date), pad = 12 * 3600 * 1000;
   var lo = t0 - pad, hi = t1 + pad;
   function x(date) { return m.l + (pd(date) - lo) / (hi - lo) * (W - m.l - m.r); }
@@ -231,7 +239,11 @@ function drawChart(rows) {
   hit.addEventListener("pointermove", move);
   hit.addEventListener("pointerdown", move);
   hit.addEventListener("pointerleave", function () { tip.hidden = true; cross.style.display = "none"; });
-  svg.appendChild(hit);
+  if (FULL_DASHBOARD_URL) {
+    var a = mk("a", {href: FULL_DASHBOARD_URL, target: "_blank", rel: "noopener", "aria-label": "Open the full dashboard"});
+    a.appendChild(hit);
+    svg.appendChild(a);
+  } else { svg.appendChild(hit); }
   host.appendChild(svg);
   host.appendChild(tip);
 }
