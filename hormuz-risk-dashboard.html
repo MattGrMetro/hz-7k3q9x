@@ -52,6 +52,7 @@
   .chart svg { display:block; width:100%; height:auto; }
   .chart text { font-size:11px; fill:var(--muted); font-family:inherit; }
   .tip { position:absolute; pointer-events:none; background:var(--panel); border:1px solid var(--line); box-shadow:0 2px 10px rgba(0,0,0,.2); padding:6px 10px; border-radius:8px; font-size:12px; white-space:nowrap; z-index:2; color:var(--muted); }
+  .tip .tipnote { color:var(--fg); font-weight:700; margin-top:4px; }
   .tip strong { display:block; color:var(--fg); }
   .err { color:var(--bad); }
 </style>
@@ -232,7 +233,7 @@ function drawTrend(rows) {
       "Transits " + r.transits + " (" + r.tin + " in, " + r.tout + " out)",
       "Struck " + r.struck + ", claimed hit " + r.claims,
       "US-Iran level " + r.mil + ", diplomacy level " + r.dip ].forEach(function (t) { tip.appendChild(el("div", "", t)); });
-    tip.appendChild(el("div", "", "Click to view the full report of this date"));
+    tip.appendChild(el("div", "tipnote", "Click to view the full report of this date"));
     var near = Math.abs(cx - px) <= 16 && Math.abs(y(r.hri) - py) <= 16;
     hit.style.cursor = near ? "pointer" : "default";
     tip.hidden = false;
