@@ -9,6 +9,7 @@
     {"date": "2026-11-19", "tin": 2, "tout": 5, "struck": 2, "claims": 3, "mil": 3, "dip": 3},
     {"date": "2026-11-20", "tin": 1, "tout": 2, "struck": 0, "claims": 5, "mil": 2, "dip": 3},
     {"date": "2026-11-23", "tin": 2, "tout": 1, "struck": 2, "claims": 0, "mil": 1, "dip": 2},
-    {"date": "2026-11-25", "tin": 1, "tout": 3, "struck": 4, "claims": 2, "mil": 2, "dip": 3}
+    {"date": "2026-11-25", "tin": 1, "tout": 3, "struck": 4, "claims": 2, "mil": 2, "dip": 3},
+    {"date": "2026-11-26", "tin": 3, "tout": 3, "struck": 0, "claims": 0, "mil": 1, "dip": 3}
   ]
 }
