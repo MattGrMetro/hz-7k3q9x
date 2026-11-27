@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hormuz Strait Risk Index</title>
+<title>Persian Gulf Risk Index</title>
 <meta name="robots" content="noindex, nofollow">
 <!--
-  HORMUZ STRAIT RISK INDEX, INTRANET WIDGET
+  PERSIAN GULF RISK INDEX, INTRANET WIDGET
   Self-contained: no external scripts, fonts or libraries.
   Host this file together with readings.json (same folder), then embed it in the SharePoint
   page with the Embed web part as an iframe, for example:
@@ -68,7 +68,7 @@
 <body>
 <div class="w" id="w">
   <div class="top">
-    <div class="cell brand"><div class="title">Hormuz Strait<br>Risk Index</div></div>
+    <div class="cell brand"><div class="title">Persian Gulf<br>Risk Index</div></div>
     <div class="cell">
       <div class="big"><span id="hri">...</span><span class="of">/ 100</span></div>
       <div class="side"><span class="chip" id="chip"></span><span class="delta" id="delta"></span></div>
@@ -192,7 +192,7 @@ function drawChart(rows) {
   function x(date) { return m.l + (pd(date) - lo) / (hi - lo) * (W - m.l - m.r); }
   function y(v) { return H - m.b - v / 100 * (H - m.t - m.b); }
   function mk(name, attrs, text) { var n = document.createElementNS(NS, name); for (var a in attrs) n.setAttribute(a, attrs[a]); if (text !== undefined) n.textContent = text; return n; }
-  var svg = mk("svg", {viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "Hormuz Risk Index over the last " + rows.length + " editions, latest " + rows[rows.length - 1].hri});
+  var svg = mk("svg", {viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "Persian Gulf Risk Index over the last " + rows.length + " editions, latest " + rows[rows.length - 1].hri});
   CFG.bands.forEach(function (b, i) {
     var top = i + 1 < CFG.bands.length ? CFG.bands[i + 1].from : 100;
     svg.appendChild(mk("rect", {x: m.l, y: y(top), width: W - m.l - m.r, height: y(b.from) - y(top), fill: BAND_COLOR[i], "fill-opacity": BAND_FILL[i]}));
